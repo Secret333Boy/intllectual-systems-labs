@@ -180,7 +180,6 @@ export default class Labyrinth {
         }
       }
     }
-
     return { a, b, graph, player, enemies };
   }
 }
