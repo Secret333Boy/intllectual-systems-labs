@@ -18,6 +18,7 @@ export default class Labyrinth {
     BB: 'B',
     ER: 'e',
     EF: 'E',
+    BP: 'P',
     path: '▪',
     null: ' ',
   };
@@ -25,14 +26,16 @@ export default class Labyrinth {
   protected graph: Graph;
   protected player: Player;
   protected enemies: Enemy[] = [];
+  public goal: Vertex<Position2D>;
 
   constructor(
-    protected arr: ('AA' | 'BB' | 'XX' | 'PP' | 'ER' | 'EF' | null)[][]
+    protected arr: ('AA' | 'BB' | 'XX' | 'PP' | 'ER' | 'EF' | 'BP' | null)[][]
   ) {
-    const { graph, player, enemies } = this.toGraph();
+    const { graph, player, enemies, b } = this.toGraph(true);
     this.graph = graph;
     this.player = player;
     this.enemies = enemies;
+    this.goal = b;
   }
 
   public getSolution(useAStar = true): Position2D[] {
@@ -42,7 +45,9 @@ export default class Labyrinth {
 
   public draw(): string {
     let res = '';
+    res += Labyrinth.VIEW_SYMBOLS.XX.repeat(this.arr[0].length + 2) + '\n';
     for (let i = 0; i < this.arr.length; i++) {
+      res += Labyrinth.VIEW_SYMBOLS.XX;
       for (let j = 0; j < this.arr[i].length; j++) {
         const playerCords = this.player.getVertex().payload.position.coords;
         if (
@@ -66,8 +71,9 @@ export default class Labyrinth {
         }
         res += Labyrinth.VIEW_SYMBOLS[this.arr[i][j] ?? 'null'];
       }
-      res += '\n';
+      res += Labyrinth.VIEW_SYMBOLS.XX + '\n';
     }
+    res += Labyrinth.VIEW_SYMBOLS.XX.repeat(this.arr[0].length + 2) + '\n';
     return res;
   }
 
@@ -116,21 +122,16 @@ export default class Labyrinth {
   }
 
   public nextStep(): boolean {
-    // this.player.makeMove();
+    this.player.makeMove();
     this.enemies.forEach((enemy) => enemy.makeMove());
-    return !this.player.isDead;
+    return this.player.isDead || this.isWin;
   }
-
-  // private getEnemyLengthToPlayer(enemy: Enemy) {
-  //   return enemy
-  //     .getVertex()
-  //     .payload.position.getLengthTo(this.player.getVertex().payload.position);
-  // }
 
   public getPossibleStates(playerMove: boolean): {
     move: Vertex<Position2D> | undefined;
     state: Labyrinth;
   }[] {
+    if (this.isWin) return [{ move: undefined, state: this }];
     const res: { move: Vertex<Position2D> | undefined; state: Labyrinth }[] =
       [];
     if (playerMove) {
@@ -139,25 +140,48 @@ export default class Labyrinth {
         .getLinks()
         .filter((vertex) => !vertex.isOccupied());
       for (const possibleMove of possibleMoves) {
-        const copyArr = this.arr.slice().map((row) => row.slice());
-        const { x, y } = possibleMove.payload.position.coords;
-        copyArr[x][y] = 'PP';
+        const copyArr = this.arr
+          .slice()
+          .map((row) => row.slice())
+          .map((row) =>
+            row.map((item) =>
+              ['EF', 'ER', 'PP', 'BP'].includes(item || '') ? null : item
+            )
+          );
+        const { x: playerX, y: playerY } = possibleMove.payload.position.coords;
+        copyArr[playerX][playerY] = 'PP';
         for (const enemy of this.enemies) {
           const { x, y } = enemy.getVertex().payload.position.coords;
           copyArr[x][y] = 'EF';
         }
+        const { x: goalX, y: goalY } = this.goal.payload.position.coords;
+        copyArr[goalX][goalY] =
+          goalX === playerX && goalY === playerY ? 'BP' : 'BB';
         const labyrinth = new Labyrinth(copyArr);
         res.push({ move: possibleMove, state: labyrinth });
       }
     } else {
       const enemiesPossibleMoves = this.enemies.map((enemy) =>
-        enemy.getPossibleMoves().filter((vertex) => !vertex.isOccupied())
+        enemy
+          .getPossibleMoves()
+          .filter((vertex) => !vertex.isOccupied() && vertex !== this.goal)
       );
       const possibleCombinations = getCombinations(enemiesPossibleMoves);
       for (const possibleCombination of possibleCombinations) {
-        const copyArr = this.arr.slice().map((row) => row.slice());
-        const { x, y } = this.player.getVertex().payload.position.coords;
-        copyArr[x][y] = 'PP';
+        const copyArr = this.arr
+          .slice()
+          .map((row) => row.slice())
+          .map((row) =>
+            row.map((item) =>
+              ['EF', 'ER', 'PP', 'BP'].includes(item || '') ? null : item
+            )
+          );
+        const { x: playerX, y: playerY } =
+          this.player.getVertex().payload.position.coords;
+        copyArr[playerX][playerY] = 'PP';
+        const { x: goalX, y: goalY } = this.goal.payload.position.coords;
+        copyArr[goalX][goalY] =
+          goalX === playerX && goalY === playerY ? 'BP' : 'BB';
         for (let i = 0; i < this.enemies.length; i++) {
           const { x, y } = possibleCombination[i].payload.position.coords;
           copyArr[x][y] = 'EF';
@@ -168,6 +192,14 @@ export default class Labyrinth {
     }
 
     return res;
+  }
+
+  public getLength(vertex1: Vertex<Position2D>, vertex2: Vertex<Position2D>) {
+    try {
+      return this.graph.getLength(vertex1, vertex2);
+    } catch (e) {
+      return Infinity;
+    }
   }
 
   public toGraph(useAStar = true): {
@@ -189,16 +221,22 @@ export default class Labyrinth {
       for (let j = 0; j < this.arr[i].length; j++) {
         const item = this.arr[i][j];
 
-        if (item === 'AA') {
+        if (!a && item === 'AA') {
           const vertex = graph.createVertex(new Position2D(i, j));
           a = vertex;
         }
-        if (item === 'BB') {
+        if (!b && item === 'BB') {
           const vertex = graph.createVertex(new Position2D(i, j));
           b = vertex;
         }
-        if (item === 'PP') {
+        if (!p && item === 'PP') {
           const vertex = graph.createVertex(new Position2D(i, j));
+          p = vertex;
+        }
+
+        if (!b && !p && item === 'BP') {
+          const vertex = graph.createVertex(new Position2D(i, j));
+          b = vertex;
           p = vertex;
         }
       }
@@ -206,11 +244,7 @@ export default class Labyrinth {
     const playerVertex = p || a;
     if (!playerVertex || !b) throw new Error('There is no A or B locations');
 
-    const player = new Player(
-      playerVertex,
-      new PlayerMinimaxBehavior(b, 3),
-      this
-    );
+    const player = new Player(playerVertex, new PlayerMinimaxBehavior(), this);
 
     for (let i = 0; i < this.arr.length; i++) {
       for (let j = 0; j < this.arr[i].length; j++) {
@@ -279,5 +313,13 @@ export default class Labyrinth {
 
   public getEnemies(): Enemy<Position2D>[] {
     return this.enemies;
+  }
+
+  get isWin() {
+    return (
+      this.player
+        .getVertex()
+        .payload.position.getLengthTo(this.goal.payload.position) === 0
+    );
   }
 }

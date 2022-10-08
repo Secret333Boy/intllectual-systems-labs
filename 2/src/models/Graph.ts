@@ -85,6 +85,24 @@ export default class Graph<P extends Position = Position2D> {
     return this.findPathStrategy.findPath(vertex1, vertex2, avoid);
   }
 
+  public getLength(
+    vertex1: Vertex<P>,
+    vertex2: Vertex<P>,
+    avoid?: (vertex: Vertex<P>) => boolean
+  ) {
+    if (vertex1 === vertex2) return 0;
+    const path = this.findPathStrategy.findPath(vertex1, vertex2, avoid);
+    if (path.length === 2)
+      return path[0].payload.position.getLengthTo(path[1].payload.position);
+    let res = 0;
+
+    for (let i = 0; i < path.length - 2; i++) {
+      res += path[i].payload.position.getLengthTo(path[i + 1].payload.position);
+    }
+
+    return res;
+  }
+
   public getVertices(): Vertex<P>[] {
     return [...this.vertices];
   }

@@ -3,7 +3,7 @@ import Position2D from './Position2D';
 import Vertex from './Vertex';
 
 export default class PlayerMinimaxBehavior {
-  constructor(private goal: Vertex<Position2D>, private maxDepth: number) {}
+  constructor(private maxDepth: number = 3) {}
 
   public minimax(
     data: {
@@ -17,39 +17,36 @@ export default class PlayerMinimaxBehavior {
     if (depth === this.maxDepth) return { move, score: this.getScore(state) };
     const nextStates = state.getPossibleStates(isMax);
     if (isMax) {
-      const results = nextStates.map((nextState) =>
-        this.minimax(nextState, depth + 1, false)
-      );
-      const maxResult = results.reduce((acc, value) =>
-        acc.score > value.score ? acc : value
-      );
-      return maxResult;
+      let maxResult = { move, score: -Infinity };
+      for (const state of nextStates) {
+        const result = this.minimax(state, depth + 1, false);
+        if (result.score > maxResult.score) maxResult = result;
+      }
+      return { move: move || maxResult.move, score: maxResult.score };
     }
-    const results = nextStates.map((nextState) =>
-      this.minimax(nextState, depth + 1, true)
-    );
-    const minResult = results.reduce((acc, value) =>
-      acc.score < value.score ? acc : value
-    );
-    return minResult;
+
+    let minResult = { move, score: Infinity };
+    for (const state of nextStates) {
+      const result = this.minimax(state, depth + 1, true);
+      if (result.score < minResult.score) minResult = result;
+    }
+
+    return { move, score: minResult.score };
   }
 
   private getScore(labyrinth: Labyrinth) {
-    const lengthToGoal = labyrinth
-      .getPlayer()
-      .getVertex()
-      .payload.position.getLengthTo(this.goal.payload.position);
+    const playerVertex = labyrinth.getPlayer().getVertex();
+    const lengthToGoal = labyrinth.getLength(playerVertex, labyrinth.goal);
+    const enemies = labyrinth.getEnemies();
     const lengthToNearestEnemy = Math.min(
-      ...labyrinth
-        .getEnemies()
-        .map((enemy) =>
-          enemy
-            .getVertex()
-            .payload.position.getLengthTo(
-              labyrinth.getPlayer().getVertex().payload.position
-            )
-        )
+      ...enemies.map((enemy) =>
+        labyrinth.getLength(enemy.getVertex(), playerVertex)
+      )
     );
-    return lengthToNearestEnemy - lengthToGoal;
+
+    return (
+      (lengthToNearestEnemy === Infinity ? 0 : lengthToNearestEnemy) * 10 -
+      (lengthToGoal === Infinity ? 0 : lengthToGoal)
+    );
   }
 }
