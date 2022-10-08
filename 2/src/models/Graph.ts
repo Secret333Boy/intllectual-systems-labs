@@ -77,8 +77,12 @@ export default class Graph<P extends Position = Position2D> {
     this.findPathStrategy.setGraph(this);
   }
 
-  public findPath(vertex1: Vertex<P>, vertex2: Vertex<P>) {
-    return this.findPathStrategy.findPath(vertex1, vertex2);
+  public findPath(
+    vertex1: Vertex<P>,
+    vertex2: Vertex<P>,
+    avoid?: (vertex: Vertex<P>) => boolean
+  ) {
+    return this.findPathStrategy.findPath(vertex1, vertex2, avoid);
   }
 
   public getVertices(): Vertex<P>[] {

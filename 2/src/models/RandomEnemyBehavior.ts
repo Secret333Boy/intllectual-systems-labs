@@ -1,10 +1,10 @@
-import EnemyBehaviorStrategy from '../interfaces/EnemyBehaviorStrategy';
+import BehaviorStrategy from '../interfaces/BehaviorStrategy';
 import Position from '../interfaces/Position';
 import Position2D from './Position2D';
 import Vertex from './Vertex';
 
 export default class RandomEnemyBehavior<P extends Position = Position2D>
-  implements EnemyBehaviorStrategy<P>
+  implements BehaviorStrategy<P>
 {
   public getNextVertex(vertex: Vertex<P>): Vertex<P> {
     const links = vertex.getLinks();

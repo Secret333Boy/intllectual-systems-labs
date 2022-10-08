@@ -9,7 +9,11 @@ export default class AStarPathFinder<P extends Position>
 {
   constructor(protected graph?: Graph<P>) {}
 
-  public findPath(vertex1: Vertex<P>, vertex2: Vertex<P>): Vertex<P>[] {
+  public findPath(
+    vertex1: Vertex<P>,
+    vertex2: Vertex<P>,
+    avoid?: (vertex: Vertex<P>) => boolean
+  ): Vertex<P>[] {
     if (!this.graph) throw new Error('Graph is not specified');
     if (!vertex1.payload.position)
       throw new Error('Vertex1 has invalid position');
@@ -31,7 +35,9 @@ export default class AStarPathFinder<P extends Position>
       }
       if (!vertex.payload.g) vertex.payload.g = 0;
       vertex.payload.closed = true;
-      const children = vertex.getLinks();
+      let children = vertex.getLinks();
+      if (avoid) children = children.filter((vertex) => !avoid(vertex));
+
       for (const child of children) {
         const g =
           vertex.payload.g +

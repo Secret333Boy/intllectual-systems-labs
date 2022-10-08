@@ -1,9 +1,11 @@
+import getCombinations from '../utils/getCombinations';
 import AStarPathFinder from './AStarPathFinder';
 import Enemy from './Enemy';
 import FindPathEnemyBehavior from './FindPathEnemyBehavior';
 import Graph from './Graph';
 import LiPathFinder from './LiPathFinder';
 import Player from './Player';
+import PlayerMinimaxBehavior from './PlayerMinimaxBehavior';
 import Position2D from './Position2D';
 import RandomEnemyBehavior from './RandomEnemyBehavior';
 import Vertex from './Vertex';
@@ -21,7 +23,7 @@ export default class Labyrinth {
   };
 
   protected graph: Graph;
-  protected player?: Player;
+  protected player: Player;
   protected enemies: Enemy[] = [];
 
   constructor(
@@ -42,8 +44,12 @@ export default class Labyrinth {
     let res = '';
     for (let i = 0; i < this.arr.length; i++) {
       for (let j = 0; j < this.arr[i].length; j++) {
-        const playerCords = this.player?.getVertex().payload.position.coords;
-        if (playerCords?.x === i && playerCords?.y === j) {
+        const playerCords = this.player.getVertex().payload.position.coords;
+        if (
+          !this.player.isDead &&
+          playerCords?.x === i &&
+          playerCords?.y === j
+        ) {
           res += Labyrinth.VIEW_SYMBOLS.PP;
           continue;
         }
@@ -87,7 +93,6 @@ export default class Labyrinth {
     count: number,
     useRandomBehavior = false
   ): Enemy<Position2D>[] {
-    if (!this.player) throw new Error('There is no player');
     const enemies: Enemy[] = [];
     const behaviorStrategy = useRandomBehavior
       ? new RandomEnemyBehavior()
@@ -110,11 +115,66 @@ export default class Labyrinth {
     return enemies;
   }
 
+  public nextStep(): boolean {
+    // this.player.makeMove();
+    this.enemies.forEach((enemy) => enemy.makeMove());
+    return !this.player.isDead;
+  }
+
+  // private getEnemyLengthToPlayer(enemy: Enemy) {
+  //   return enemy
+  //     .getVertex()
+  //     .payload.position.getLengthTo(this.player.getVertex().payload.position);
+  // }
+
+  public getPossibleStates(playerMove: boolean): {
+    move: Vertex<Position2D> | undefined;
+    state: Labyrinth;
+  }[] {
+    const res: { move: Vertex<Position2D> | undefined; state: Labyrinth }[] =
+      [];
+    if (playerMove) {
+      const possibleMoves = this.player
+        .getVertex()
+        .getLinks()
+        .filter((vertex) => !vertex.isOccupied());
+      for (const possibleMove of possibleMoves) {
+        const copyArr = this.arr.slice().map((row) => row.slice());
+        const { x, y } = possibleMove.payload.position.coords;
+        copyArr[x][y] = 'PP';
+        for (const enemy of this.enemies) {
+          const { x, y } = enemy.getVertex().payload.position.coords;
+          copyArr[x][y] = 'EF';
+        }
+        const labyrinth = new Labyrinth(copyArr);
+        res.push({ move: possibleMove, state: labyrinth });
+      }
+    } else {
+      const enemiesPossibleMoves = this.enemies.map((enemy) =>
+        enemy.getPossibleMoves().filter((vertex) => !vertex.isOccupied())
+      );
+      const possibleCombinations = getCombinations(enemiesPossibleMoves);
+      for (const possibleCombination of possibleCombinations) {
+        const copyArr = this.arr.slice().map((row) => row.slice());
+        const { x, y } = this.player.getVertex().payload.position.coords;
+        copyArr[x][y] = 'PP';
+        for (let i = 0; i < this.enemies.length; i++) {
+          const { x, y } = possibleCombination[i].payload.position.coords;
+          copyArr[x][y] = 'EF';
+        }
+        const labyrinth = new Labyrinth(copyArr);
+        res.push({ move: undefined, state: labyrinth });
+      }
+    }
+
+    return res;
+  }
+
   public toGraph(useAStar = true): {
     a: Vertex<Position2D>;
     b: Vertex<Position2D>;
     graph: Graph<Position2D>;
-    player: Player<Position2D> | undefined;
+    player: Player;
     enemies: Enemy<Position2D>[];
   } {
     const findPathStrategy = useAStar
@@ -123,24 +183,54 @@ export default class Labyrinth {
     const graph = new Graph(findPathStrategy);
     let a: Vertex<Position2D> | undefined;
     let b: Vertex<Position2D> | undefined;
-    let player: Player | undefined;
+    let p: Vertex<Position2D> | undefined;
     const enemies: Enemy[] = [];
+    for (let i = 0; i < this.arr.length; i++) {
+      for (let j = 0; j < this.arr[i].length; j++) {
+        const item = this.arr[i][j];
+
+        if (item === 'AA') {
+          const vertex = graph.createVertex(new Position2D(i, j));
+          a = vertex;
+        }
+        if (item === 'BB') {
+          const vertex = graph.createVertex(new Position2D(i, j));
+          b = vertex;
+        }
+        if (item === 'PP') {
+          const vertex = graph.createVertex(new Position2D(i, j));
+          p = vertex;
+        }
+      }
+    }
+    const playerVertex = p || a;
+    if (!playerVertex || !b) throw new Error('There is no A or B locations');
+
+    const player = new Player(
+      playerVertex,
+      new PlayerMinimaxBehavior(b, 3),
+      this
+    );
+
     for (let i = 0; i < this.arr.length; i++) {
       for (let j = 0; j < this.arr[i].length; j++) {
         const item = this.arr[i][j];
         if (item === 'XX') continue;
 
         const vertex = graph.createVertex(new Position2D(i, j));
-        if (item === 'AA') {
-          a = vertex;
-          player = new Player(a);
-          continue;
+        if (item === 'EF') {
+          enemies.push(
+            new Enemy(new FindPathEnemyBehavior(graph, <Player>player), vertex)
+          );
+          this.arr[i][j] = null;
         }
-        if (item === 'BB') b = vertex;
+        if (item === 'ER') {
+          enemies.push(new Enemy(new RandomEnemyBehavior(), vertex));
+          this.arr[i][j] = null;
+        }
       }
     }
 
-    if (!a || !b) throw new Error('There is no A or B locations');
     const vertices = graph.getVertices();
     for (let i = 0; i < this.arr.length; i++) {
       for (let j = 0; j < this.arr[i].length; j++) {
@@ -180,6 +270,14 @@ export default class Labyrinth {
         }
       }
     }
-    return { a, b, graph, player, enemies };
+    return { a: playerVertex, b, graph, player, enemies };
+  }
+
+  public getPlayer(): Player {
+    return this.player;
+  }
+
+  public getEnemies(): Enemy<Position2D>[] {
+    return this.enemies;
   }
 }
