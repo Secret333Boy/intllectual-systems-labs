@@ -5,7 +5,6 @@ import FindPathEnemyBehavior from './FindPathEnemyBehavior';
 import Graph from './Graph';
 import LiPathFinder from './LiPathFinder';
 import Player from './Player';
-import PlayerMinimaxBehavior from './PlayerMinimaxBehavior';
 import Position2D from './Position2D';
 import RandomEnemyBehavior from './RandomEnemyBehavior';
 import Vertex from './Vertex';
@@ -244,7 +243,7 @@ export default class Labyrinth {
     const playerVertex = p || a;
     if (!playerVertex || !b) throw new Error('There is no A or B locations');
 
-    const player = new Player(playerVertex, new PlayerMinimaxBehavior(), this);
+    const player = new Player(playerVertex, this);
 
     for (let i = 0; i < this.arr.length; i++) {
       for (let j = 0; j < this.arr[i].length; j++) {

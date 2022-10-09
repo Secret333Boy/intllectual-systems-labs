@@ -9,6 +9,6 @@ export default interface VertexPayload<P extends Position> {
   depth?: number;
   closed?: boolean;
   g?: number;
-  player?: Player<P>;
+  player?: Player;
   enemy?: Enemy<P>;
 }

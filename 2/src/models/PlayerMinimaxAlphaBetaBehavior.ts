@@ -3,8 +3,8 @@ import Labyrinth from './Labyrinth';
 import Position2D from './Position2D';
 import Vertex from './Vertex';
 
-export default class PlayerMinimaxBehavior implements MinimaxProvider {
-  constructor(private maxDepth: number = 3) {}
+export default class PlayerMinimaxAlphaBetaBehavior implements MinimaxProvider {
+  constructor(private maxDepth: number = 5) {}
 
   public minimax(
     data: {
@@ -12,7 +12,9 @@ export default class PlayerMinimaxBehavior implements MinimaxProvider {
       state: Labyrinth;
     },
     depth = 0,
-    isMax = true
+    isMax = true,
+    alpha = -Infinity,
+    beta = Infinity
   ): { move: Vertex<Position2D> | undefined; score: number } {
     const { move, state } = data;
     if (depth === this.maxDepth) return { move, score: this.getScore(state) };
@@ -20,8 +22,10 @@ export default class PlayerMinimaxBehavior implements MinimaxProvider {
     if (isMax) {
       let maxResult = { move, score: -Infinity };
       for (const state of nextStates) {
-        const result = this.minimax(state, depth + 1, false);
+        const result = this.minimax(state, depth + 1, false, alpha, beta);
         if (result.score > maxResult.score) maxResult = result;
+        if (result.score > alpha) alpha = result.score;
+        if (beta <= alpha) break;
       }
       return { move: move || maxResult.move, score: maxResult.score };
     }
@@ -30,6 +34,8 @@ export default class PlayerMinimaxBehavior implements MinimaxProvider {
     for (const state of nextStates) {
       const result = this.minimax(state, depth + 1, true);
       if (result.score < minResult.score) minResult = result;
+      if (result.score < beta) beta = result.score;
+      if (beta <= alpha) break;
     }
 
     return { move, score: minResult.score };
@@ -45,8 +51,12 @@ export default class PlayerMinimaxBehavior implements MinimaxProvider {
       )
     );
 
+    // return (
+    //   (lengthToGoal === Infinity ? 0 : 1 / lengthToGoal) -
+    //   (lengthToNearestEnemy === Infinity ? 0 : 1 / lengthToNearestEnemy) * 100
+    // );
     return (
-      (lengthToNearestEnemy === Infinity ? 0 : lengthToNearestEnemy) * 10 -
+      (lengthToNearestEnemy === Infinity ? 0 : lengthToNearestEnemy) -
       (lengthToGoal === Infinity ? 0 : lengthToGoal)
     );
   }
