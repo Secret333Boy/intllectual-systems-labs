@@ -28,11 +28,13 @@ export default class Labyrinth {
   public goal: Vertex<Position2D>;
 
   constructor(
-    protected arr: ('AA' | 'BB' | 'XX' | 'PP' | 'ER' | 'EF' | 'BP' | null)[][]
+    protected arr: ('AA' | 'BB' | 'XX' | 'PP' | 'ER' | 'EF' | 'BP' | null)[][],
+    options?: { isPlayerDead: boolean }
   ) {
     const { graph, player, enemies, b } = this.toGraph(true);
     this.graph = graph;
     this.player = player;
+    if (options?.isPlayerDead) this.player.isDead = true;
     this.enemies = enemies;
     this.goal = b;
   }
@@ -130,7 +132,8 @@ export default class Labyrinth {
     move: Vertex<Position2D> | undefined;
     state: Labyrinth;
   }[] {
-    if (this.isWin) return [{ move: undefined, state: this }];
+    if (this.isWin || this.player.isDead)
+      return [{ move: undefined, state: this }];
     const res: { move: Vertex<Position2D> | undefined; state: Labyrinth }[] =
       [];
     if (playerMove) {
@@ -163,7 +166,7 @@ export default class Labyrinth {
       const enemiesPossibleMoves = this.enemies.map((enemy) => {
         const possibleMoves = enemy
           .getPossibleMoves()
-          .filter((vertex) => !vertex.isOccupied() && vertex !== this.goal);
+          .filter((vertex) => !vertex.hasEnemy() && vertex !== this.goal);
         if (possibleMoves.length === 0) possibleMoves.push(enemy.getVertex());
         return possibleMoves;
       });
@@ -183,11 +186,16 @@ export default class Labyrinth {
         const { x: goalX, y: goalY } = this.goal.payload.position.coords;
         copyArr[goalX][goalY] =
           goalX === playerX && goalY === playerY ? 'BP' : 'BB';
+        let isPlayerDead = false;
         for (let i = 0; i < this.enemies.length; i++) {
           const { x, y } = possibleCombination[i].payload.position.coords;
+          if (x === playerX && y === playerY) {
+            isPlayerDead = true;
+            continue;
+          }
           copyArr[x][y] = 'EF';
         }
-        const labyrinth = new Labyrinth(copyArr);
+        const labyrinth = new Labyrinth(copyArr, { isPlayerDead });
         res.push({ move: undefined, state: labyrinth });
       }
     }

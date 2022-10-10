@@ -51,6 +51,7 @@ export default class PlayerMinimaxAlphaBetaBehavior implements MinimaxProvider {
       )
     );
 
+    if (labyrinth.getPlayer().isDead) return -Infinity;
     return (
       (lengthToNearestEnemy === Infinity ? 0 : lengthToNearestEnemy) -
       (lengthToGoal === Infinity ? 0 : lengthToGoal)
