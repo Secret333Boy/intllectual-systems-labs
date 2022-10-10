@@ -46,7 +46,7 @@ export default class PlayerMinimaxBehavior implements MinimaxProvider {
     );
 
     return (
-      (lengthToNearestEnemy === Infinity ? 0 : lengthToNearestEnemy) * 10 -
+      (lengthToNearestEnemy === Infinity ? 0 : lengthToNearestEnemy) -
       (lengthToGoal === Infinity ? 0 : lengthToGoal)
     );
   }

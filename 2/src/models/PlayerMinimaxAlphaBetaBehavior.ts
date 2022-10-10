@@ -51,10 +51,6 @@ export default class PlayerMinimaxAlphaBetaBehavior implements MinimaxProvider {
       )
     );
 
-    // return (
-    //   (lengthToGoal === Infinity ? 0 : 1 / lengthToGoal) -
-    //   (lengthToNearestEnemy === Infinity ? 0 : 1 / lengthToNearestEnemy) * 100
-    // );
     return (
       (lengthToNearestEnemy === Infinity ? 0 : lengthToNearestEnemy) -
       (lengthToGoal === Infinity ? 0 : lengthToGoal)

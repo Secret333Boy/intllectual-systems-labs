@@ -160,11 +160,13 @@ export default class Labyrinth {
         res.push({ move: possibleMove, state: labyrinth });
       }
     } else {
-      const enemiesPossibleMoves = this.enemies.map((enemy) =>
-        enemy
+      const enemiesPossibleMoves = this.enemies.map((enemy) => {
+        const possibleMoves = enemy
           .getPossibleMoves()
-          .filter((vertex) => !vertex.isOccupied() && vertex !== this.goal)
-      );
+          .filter((vertex) => !vertex.isOccupied() && vertex !== this.goal);
+        if (possibleMoves.length === 0) possibleMoves.push(enemy.getVertex());
+        return possibleMoves;
+      });
       const possibleCombinations = getCombinations(enemiesPossibleMoves);
       for (const possibleCombination of possibleCombinations) {
         const copyArr = this.arr
@@ -195,7 +197,7 @@ export default class Labyrinth {
 
   public getLength(vertex1: Vertex<Position2D>, vertex2: Vertex<Position2D>) {
     try {
-      return this.graph.getLength(vertex1, vertex2);
+      return this.graph.getLength(vertex1, vertex2, true);
     } catch (e) {
       return Infinity;
     }

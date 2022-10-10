@@ -88,6 +88,7 @@ export default class Graph<P extends Position = Position2D> {
   public getLength(
     vertex1: Vertex<P>,
     vertex2: Vertex<P>,
+    useRound = false,
     avoid?: (vertex: Vertex<P>) => boolean
   ) {
     if (vertex1 === vertex2) return 0;
@@ -97,7 +98,10 @@ export default class Graph<P extends Position = Position2D> {
     let res = 0;
 
     for (let i = 0; i < path.length - 2; i++) {
-      res += path[i].payload.position.getLengthTo(path[i + 1].payload.position);
+      const lengthToNextVertex = path[i].payload.position.getLengthTo(
+        path[i + 1].payload.position
+      );
+      res += useRound ? Math.round(lengthToNextVertex) : lengthToNextVertex;
     }
 
     return res;
