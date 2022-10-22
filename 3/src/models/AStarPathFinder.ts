@@ -9,21 +9,25 @@ export default class AStarPathFinder<P extends Position>
 {
   constructor(protected graph?: Graph<P>) {}
 
-  public findPath(vertex1: Vertex<P>, vertex2: Vertex<P>): Vertex<P>[] {
+  public findPath(
+    vertex1: Vertex<P>,
+    vertex2: Vertex<P>,
+    avoid?: (vertex: Vertex<P>) => boolean
+  ): Vertex<P>[] {
     if (!this.graph) throw new Error('Graph is not specified');
     if (!vertex1.payload.position)
       throw new Error('Vertex1 has invalid position');
     if (!vertex2.payload.position)
       throw new Error('Vertex2 has invalid position');
-    const priorityQueue = new PriorityQueue<Vertex<P>>(true);
+    const queue = new PriorityQueue<Vertex<P>>(true);
     vertex1.payload.g = 0;
-    priorityQueue.push(vertex1, this.getH(vertex1, vertex2));
+    queue.push(vertex1, this.getH(vertex1, vertex2));
     let found = false;
-    while (!priorityQueue.isEmpty()) {
-      const vertex = priorityQueue.pull();
+    while (!queue.isEmpty()) {
+      const vertex = queue.pull();
       if (!vertex)
         throw new Error(
-          'priorityQueue.isEmpty() returned false, but priorityQueue.pull() - undefined'
+          'queue.isEmpty() returned false, but queue.pull() - undefined'
         );
       if (vertex === vertex2) {
         found = true;
@@ -31,7 +35,9 @@ export default class AStarPathFinder<P extends Position>
       }
       if (!vertex.payload.g) vertex.payload.g = 0;
       vertex.payload.closed = true;
-      const children = vertex.getLinks();
+      let children = vertex.getLinks();
+      if (avoid) children = children.filter((vertex) => !avoid(vertex));
+
       for (const child of children) {
         const g =
           vertex.payload.g +
@@ -40,7 +46,7 @@ export default class AStarPathFinder<P extends Position>
           child.payload.previousVertex = vertex;
           const h = this.getH(child, vertex2);
           child.payload.g = g;
-          priorityQueue.push(child, g + h);
+          queue.push(child, g + h);
         }
       }
     }
