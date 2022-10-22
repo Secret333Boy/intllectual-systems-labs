@@ -1,32 +1,29 @@
-import MinimaxProvider from '../interfaces/MinimaxProvider';
 import Movable from '../interfaces/Movable';
+import PlayerBehaviorStrategy from '../interfaces/PlayerBehaviorStrategy';
 import Labyrinth from './Labyrinth';
-import PlayerMinimaxAlphaBetaBehavior from './PlayerMinimaxAlphaBetaBehavior';
-import PlayerMinimaxBehavior from './PlayerMinimaxBehavior';
+import PlayerNegamaxAlphaBetaBehavior from './PlayerNegamaxAlphaBetaBehavior';
+import PlayerNegamaxBehavior from './PlayerNegamaxBehavior';
 import Position2D from './Position2D';
 import Vertex from './Vertex';
 
 export default class Player implements Movable {
   public isDead = false;
 
-  private playerMinimaxBehavior: MinimaxProvider;
+  private playerMinimaxBehavior: PlayerBehaviorStrategy;
 
   constructor(
     private vertex: Vertex<Position2D>,
     private labyrinth: Labyrinth,
-    useOptimizedMinimax = true
+    useOptimizedNegamax = true
   ) {
     vertex.payload.player = this;
-    this.playerMinimaxBehavior = useOptimizedMinimax
-      ? new PlayerMinimaxAlphaBetaBehavior()
-      : new PlayerMinimaxBehavior();
+    this.playerMinimaxBehavior = useOptimizedNegamax
+      ? new PlayerNegamaxAlphaBetaBehavior()
+      : new PlayerNegamaxBehavior();
   }
 
   public makeMove() {
-    const { move } = this.playerMinimaxBehavior.minimax({
-      move: undefined,
-      state: this.labyrinth,
-    });
+    const move = this.playerMinimaxBehavior.getNextVertex(this.labyrinth);
     if (!move) return;
 
     move.payload.player = this;

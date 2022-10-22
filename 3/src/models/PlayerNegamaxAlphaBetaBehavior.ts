@@ -4,7 +4,7 @@ import Labyrinth from './Labyrinth';
 import Position2D from './Position2D';
 import Vertex from './Vertex';
 
-export default class PlayerNegamaxBehavior
+export default class PlayerNegamaxAlphaBetaBehavior
   implements NegamaxProvider, PlayerBehaviorStrategy
 {
   constructor(private maxDepth: number = 5) {}
@@ -15,7 +15,9 @@ export default class PlayerNegamaxBehavior
       state: Labyrinth;
     },
     depth = 0,
-    color = 1
+    color = 1,
+    alpha = -Infinity,
+    beta = Infinity
   ): { move: Vertex<Position2D> | undefined; score: number } {
     const { move, state } = data;
     if (depth === this.maxDepth || state.getPlayer().isDead)
@@ -23,9 +25,13 @@ export default class PlayerNegamaxBehavior
     const nextStates = state.getPossibleStates(color === 1);
     let res = { move, score: -Infinity };
     for (const state of nextStates) {
-      const result = this.negamax(state, depth + 1, -color);
+      const result = this.negamax(state, depth + 1, -color, -beta, -alpha);
       result.score = -result.score;
       if (result.score > res.score) res = result;
+      if (result.score > alpha) {
+        alpha = result.score;
+      }
+      if (alpha >= beta) break;
     }
     return { move: move || res.move, score: res.score };
   }

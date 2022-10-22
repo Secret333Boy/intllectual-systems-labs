@@ -1,4 +1,4 @@
-import BehaviorStrategy from '../interfaces/BehaviorStrategy';
+import BehaviorStrategy from '../interfaces/EnemyBehaviorStrategy';
 import Movable from '../interfaces/Movable';
 import Position from '../interfaces/Position';
 import Position2D from './Position2D';
