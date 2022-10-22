@@ -1,8 +1,8 @@
-import FindPathStrategy from '../interfaces/FindPathStrategy';
-import Position from '../interfaces/Position';
-import Graph from './Graph';
-import Queue from './Queue';
-import Vertex from './Vertex';
+import FindPathStrategy from '../../../../interfaces/FindPathStrategy';
+import Position from '../../../../interfaces/Position';
+import Queue from '../../queue/Queue';
+import Graph from '../Graph';
+import Vertex from '../Vertex';
 
 export default class LiPathFinder<P extends Position>
   implements FindPathStrategy<P>

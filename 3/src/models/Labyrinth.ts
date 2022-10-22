@@ -1,14 +1,13 @@
 import getCombinations from '../utils/getCombinations';
-import AStarPathFinder from './AStarPathFinder';
-import Enemy from './Enemy';
-import FindPathEnemyBehavior from './FindPathEnemyBehavior';
-import Graph from './Graph';
-import LiPathFinder from './LiPathFinder';
-import Player from './Player';
+import AStarPathFinder from './data.structures/graph/strategies/AStarPathFinder';
+import Enemy from './entities/enemy/Enemy';
+import Graph from './data.structures/graph/Graph';
+import Player from './entities/player/Player';
 import Position2D from './Position2D';
-import RandomEnemyBehavior from './RandomEnemyBehavior';
-import Vertex from './Vertex';
-
+import Vertex from './data.structures/graph/Vertex';
+import RandomEnemyBehavior from './entities/enemy/strategies/RandomEnemyBehavior';
+import FindPathEnemyBehavior from './entities/enemy/strategies/FindPathEnemyBehavior';
+import LiPathFinder from './data.structures/graph/strategies/LiPathFinder';
 export default class Labyrinth {
   static VIEW_SYMBOLS = {
     XX: '█',

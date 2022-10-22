@@ -1,7 +1,7 @@
-import MinimaxProvider from '../interfaces/MinimaxProvider';
-import Labyrinth from './Labyrinth';
-import Position2D from './Position2D';
-import Vertex from './Vertex';
+import MinimaxProvider from '../../../../interfaces/MinimaxProvider';
+import Vertex from '../../../data.structures/graph/Vertex';
+import Labyrinth from '../../../Labyrinth';
+import Position2D from '../../../Position2D';
 
 export default class PlayerMinimaxBehavior implements MinimaxProvider {
   constructor(private maxDepth: number = 5) {}

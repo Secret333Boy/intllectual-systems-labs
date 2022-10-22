@@ -1,8 +1,8 @@
-import FindPathStrategy from '../interfaces/FindPathStrategy';
-import Position from '../interfaces/Position';
-import Graph from './Graph';
-import PriorityQueue from './PriorityQueue';
-import Vertex from './Vertex';
+import FindPathStrategy from '../../../../interfaces/FindPathStrategy';
+import Position from '../../../../interfaces/Position';
+import Graph from '../Graph';
+import PriorityQueue from '../../queue/PriorityQueue';
+import Vertex from '../Vertex';
 
 export default class AStarPathFinder<P extends Position>
   implements FindPathStrategy<P>

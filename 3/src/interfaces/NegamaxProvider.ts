@@ -1,6 +1,6 @@
 import Labyrinth from '../models/Labyrinth';
 import Position2D from '../models/Position2D';
-import Vertex from '../models/Vertex';
+import Vertex from '../models/data.structures/graph/Vertex';
 
 export default interface NegamaxProvider {
   negamax: (

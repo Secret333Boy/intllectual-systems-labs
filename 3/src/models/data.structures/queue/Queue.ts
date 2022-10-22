@@ -1,4 +1,4 @@
-import Node from './Node';
+import Node from '../Node';
 import QueueIterator from './QueueIterator';
 
 export default class Queue<T> {

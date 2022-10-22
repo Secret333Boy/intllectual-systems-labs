@@ -1,6 +1,6 @@
-import Position from '../interfaces/Position';
+import Position from '../../../interfaces/Position';
+import VertexPayload from '../../../interfaces/VertexPayload';
 import Graph from './Graph';
-import VertexPayload from '../interfaces/VertexPayload';
 
 export default class Vertex<P extends Position> {
   protected links: Set<Vertex<P>>;

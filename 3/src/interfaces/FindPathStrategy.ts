@@ -1,5 +1,5 @@
-import Graph from '../models/Graph';
-import Vertex from '../models/Vertex';
+import Graph from '../models/data.structures/graph/Graph';
+import Vertex from '../models/data.structures/graph/Vertex';
 import Position from './Position';
 
 export default interface FindPathStrategy<P extends Position> {

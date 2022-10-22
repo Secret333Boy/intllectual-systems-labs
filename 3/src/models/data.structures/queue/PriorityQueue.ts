@@ -1,5 +1,5 @@
 import Queue from './Queue';
-import Node from './Node';
+import Node from '../Node';
 
 export default class PriorityQueue<T> extends Queue<T> {
   constructor(private asc = false) {

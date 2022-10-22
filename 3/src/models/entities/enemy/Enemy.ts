@@ -1,9 +1,9 @@
-import BehaviorStrategy from '../interfaces/EnemyBehaviorStrategy';
-import Movable from '../interfaces/Movable';
-import Position from '../interfaces/Position';
-import Position2D from './Position2D';
-import RandomEnemyBehavior from './RandomEnemyBehavior';
-import Vertex from './Vertex';
+import BehaviorStrategy from '../../../interfaces/EnemyBehaviorStrategy';
+import Movable from '../../../interfaces/Movable';
+import Position from '../../../interfaces/Position';
+import Vertex from '../../data.structures/graph/Vertex';
+import Position2D from '../../Position2D';
+import RandomEnemyBehavior from './strategies/RandomEnemyBehavior';
 
 export default class Enemy<P extends Position = Position2D> implements Movable {
   constructor(

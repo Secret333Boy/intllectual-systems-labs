@@ -1,8 +1,8 @@
-import FindPathStrategy from '../interfaces/FindPathStrategy';
-import Position from '../interfaces/Position';
-import AStarPathFinder from './AStarPathFinder';
-import Position2D from './Position2D';
-import SquaredMatrix from './SquaredMatrix';
+import FindPathStrategy from '../../../interfaces/FindPathStrategy';
+import Position from '../../../interfaces/Position';
+import AStarPathFinder from './strategies/AStarPathFinder';
+import Position2D from '../../Position2D';
+import SquaredMatrix from '../matrix/SquaredMatrix';
 import Vertex from './Vertex';
 
 export default class Graph<P extends Position = Position2D> {

@@ -1,10 +1,10 @@
-import Movable from '../interfaces/Movable';
-import PlayerBehaviorStrategy from '../interfaces/PlayerBehaviorStrategy';
-import Labyrinth from './Labyrinth';
-import PlayerNegamaxAlphaBetaBehavior from './PlayerNegamaxAlphaBetaBehavior';
-import PlayerNegamaxBehavior from './PlayerNegamaxBehavior';
-import Position2D from './Position2D';
-import Vertex from './Vertex';
+import Movable from '../../../interfaces/Movable';
+import PlayerBehaviorStrategy from '../../../interfaces/PlayerBehaviorStrategy';
+import Vertex from '../../data.structures/graph/Vertex';
+import Labyrinth from '../../Labyrinth';
+import Position2D from '../../Position2D';
+import PlayerNegamaxAlphaBetaBehavior from './strategies/PlayerNegamaxAlphaBetaBehavior';
+import PlayerNegamaxBehavior from './strategies/PlayerNegamaxBehavior';
 
 export default class Player implements Movable {
   public isDead = false;

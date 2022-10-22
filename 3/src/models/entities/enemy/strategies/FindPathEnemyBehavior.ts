@@ -1,11 +1,11 @@
-import BehaviorStrategy from '../interfaces/EnemyBehaviorStrategy';
-import Graph from './Graph';
-import Player from './Player';
-import Position2D from './Position2D';
-import Vertex from './Vertex';
+import EnemyBehaviorStrategy from '../../../../interfaces/EnemyBehaviorStrategy';
+import Graph from '../../../data.structures/graph/Graph';
+import Vertex from '../../../data.structures/graph/Vertex';
+import Position2D from '../../../Position2D';
+import Player from '../../player/Player';
 
 export default class FindPathEnemyBehavior
-  implements BehaviorStrategy<Position2D>
+  implements EnemyBehaviorStrategy<Position2D>
 {
   constructor(private graph: Graph<Position2D>, private player: Player) {}
 
