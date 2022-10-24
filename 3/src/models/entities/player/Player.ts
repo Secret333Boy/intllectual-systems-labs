@@ -5,11 +5,12 @@ import Labyrinth from '../../Labyrinth';
 import Position2D from '../../Position2D';
 import PlayerNegamaxAlphaBetaBehavior from './strategies/PlayerNegamaxAlphaBetaBehavior';
 import PlayerNegamaxBehavior from './strategies/PlayerNegamaxBehavior';
+import PlayerNegaScoutBehavior from './strategies/PlayerNegaScoutBehavior';
 
 export default class Player implements Movable {
   public isDead = false;
 
-  private playerMinimaxBehavior: PlayerBehaviorStrategy;
+  private playerBehavior: PlayerBehaviorStrategy;
 
   constructor(
     private vertex: Vertex<Position2D>,
@@ -17,13 +18,14 @@ export default class Player implements Movable {
     useOptimizedNegamax = true
   ) {
     vertex.payload.player = this;
-    this.playerMinimaxBehavior = useOptimizedNegamax
-      ? new PlayerNegamaxAlphaBetaBehavior()
-      : new PlayerNegamaxBehavior();
+    // this.playerBehavior = useOptimizedNegamax
+    //   ? new PlayerNegamaxAlphaBetaBehavior()
+    //   : new PlayerNegamaxBehavior();
+    this.playerBehavior = new PlayerNegaScoutBehavior();
   }
 
   public makeMove() {
-    const move = this.playerMinimaxBehavior.getNextVertex(this.labyrinth);
+    const move = this.playerBehavior.getNextVertex(this.labyrinth);
     if (!move) return;
 
     move.payload.player = this;

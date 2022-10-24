@@ -29,8 +29,8 @@ const labyrinth = new Labyrinth([
 // /*9*/ [null, null, 'XX', null, null, null, null, null, null, null],
 // /*x*/
 
-// labyrinth.generateEnemies(1, true);
-// labyrinth.generateEnemies(1);
+// labyrinth.generateEnemies(2, true);
+labyrinth.generateEnemies(1);
 
 const readInterface = readline.createInterface({
   input: process.stdin,
