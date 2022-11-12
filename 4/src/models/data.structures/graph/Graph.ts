@@ -133,6 +133,51 @@ export default class Graph<P extends Position = Position2D> {
   }
 
   public prim() {
-    //
+    const priorityQueue = new PriorityQueue<Vertex<P>>(true);
+
+    for (const vertex of this.vertices) {
+      vertex.payload.depth = Infinity;
+      vertex.payload.isOpened = true;
+    }
+
+    const initialVertex = this.vertices[0];
+
+    initialVertex.payload.depth = 0;
+
+    priorityQueue.push(initialVertex, 0);
+
+    while (!priorityQueue.isEmpty()) {
+      const vertex = <Vertex<P>>priorityQueue.pull();
+
+      for (const link of vertex.getLinks()) {
+        if (!link.payload.isOpened) continue;
+        const value = this.getLinkWeight(vertex, link);
+        if (<number>link.payload.depth > value) {
+          link.payload.depth = value;
+          link.payload.previousVertex = vertex;
+          priorityQueue.push(link, value);
+        }
+      }
+
+      vertex.payload.isOpened = false;
+    }
+
+    const result = new Graph();
+    const vertices = this.vertices.map(() => result.createVertex());
+    this.vertices.forEach((vertex, i) => {
+      if (!vertex.payload.previousVertex) return;
+      const j = this.vertices.indexOf(vertex.payload.previousVertex);
+      const value = this.matrix.getElement(i, j);
+      vertices[i].linkTo(vertices[j], value);
+      vertices[j].linkTo(vertices[i], value);
+    });
+
+    for (const vertex of this.vertices) {
+      vertex.payload.depth = undefined;
+      vertex.payload.isOpened = undefined;
+      vertex.payload.previousVertex = undefined;
+    }
+
+    return result;
   }
 }
